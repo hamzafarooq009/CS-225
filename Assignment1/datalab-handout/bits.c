@@ -253,17 +253,19 @@ int allOddBits(int x) {
 //////////////////////////////////////////////////see again
 int logicalShift(int x, int n) {
   //first need to see if it is negative
-  // need to rightshift by 31
-  // int checksign = x >> 31;
-  // int mask = 1111 0000 0000 0000 0000 0000 0000 0000
+  //0x1 = 0000 0000 0000 0000 0000 0000 0000 0001
+  //~(0x1) = 1111 1111 1111 1111 1111 1111 1111 1110
+  //0x87654321 = 1000 0111 0110 0101 0100 0011 0010 0001
+  //0x08765432 = 0000 1000 0111 0110 0101 0100 0011 0010
+  //init_mask <<(27) = 1111 0000 0000 0000 0000 0000 0000 0000 (need to take complement of this to mask it using add) 
+  //31-4 = 27
 
-  int shifted_bits = x>>n;
+  int init_mask = ~(0x1);
+  int mask = ~(init_mask <<(31-n));
+  int shifted_result = x >> n;
+  int final_result = shifted_result & mask;
 
-  
-  
-  int result; 
-
-  return result;
+  return final_result;
 }
 /* 
  * rotateRight - Rotate x to the right by n
@@ -274,9 +276,22 @@ int logicalShift(int x, int n) {
  *   Rating: 3 
  */
 ///////////////////////////////////////////////////////////
+            //(1st)                              (last)
+//0x87654321 = 1000 0111 0110 0101 0100 0011 0010 0001
+//0x76543218 = 0111 0110 0101 0100 0011 0010 0001 1000
 
+//0x80000000 = 1000 0000 0000 0000 0000 0000 0000 0000
+
+//need to confirm this
 int rotateRight(int x, int n) {
-  return 2;
+  int x_copy = x >> 28;//now take last 4 bits from it only
+  int mask1 = ~((~(0x1)) << 3);
+  int x_copy_masked = x_copy & mask1; //0000 0000 0000 00000 0000 0000 0000 1000
+
+  int x_og_shifted = x >> (32-n);
+  int result = x_og_shifted | x_copy_masked;
+
+  return result;
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -330,6 +345,7 @@ int divpwr2(int x, int n) {
  *   Rating: 3
  */
 int isNonNegative(int x) {
+
   return 2;
 }
 /* 
@@ -340,6 +356,7 @@ int isNonNegative(int x) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
+
   return 2;
 }
 /*
@@ -363,5 +380,6 @@ int satMul2(int x) {
  *   Rating: 4
  */
 int isPower2(int x) {
+  
   return 2;
 }
