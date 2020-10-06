@@ -171,8 +171,9 @@ NOTES:
  *   Max ops: 8
  *   Rating: 1
  */
-int bitAnd(int x, int y) {
-  return 2;
+int bitAnd(int x, int y) { //and of two numbers, by using de morgans law
+  int z = ~(~x | ~y);
+  return z;
 }
 /* 
  * getByte - Extract byte n from word x
@@ -182,9 +183,15 @@ int bitAnd(int x, int y) {
  *   Max ops: 6
  *   Rating: 2
  */
+
 int getByte(int x, int n) {
-  return 2;
+  int leftshifted_n = n << 3;
+  int shifted_x = x >> leftshifted_n;
+  int mask = 0xFF;
+  int result = mask & shifted_x;
+  return result;
 }
+
 /* 
  * anyEvenBit - return 1 if any even-numbered bit in word set to 1
  *   Examples anyEvenBit(0xA) = 0, anyEvenBit(0xE) = 1
@@ -193,6 +200,15 @@ int getByte(int x, int n) {
  *   Rating: 2
  */
 int anyEvenBit(int x) {
+  
+  //making a mask 
+  int b0 = 0xaa;
+  int b1 = b0 << 8;
+  int b2 = b1 << 8;
+  int b3 = b2 << 8;
+  int b4 = b3 << 8;
+  int allbs = b0 | b1 | b2 | b3 | b4;
+  printf(allbs); 
   return 2;
 }
 /* 
