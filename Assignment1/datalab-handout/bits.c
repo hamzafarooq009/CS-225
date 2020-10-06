@@ -202,15 +202,21 @@ int getByte(int x, int n) {
 int anyEvenBit(int x) {
   
   //making a mask 
-  int b0 = 0xaa;
+  int b0 = 0x55;
+
   int b1 = b0 << 8;
   int b2 = b1 << 8;
   int b3 = b2 << 8;
-  int b4 = b3 << 8;
-  int allbs = b0 | b1 | b2 | b3 | b4;
-  printf(allbs); 
-  return 2;
+
+  int mask = b0 | b1 | b2 | b3;
+
+  int result = x & mask;
+  
+  int ans = !(!result);
+  
+  return ans;
 }
+
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
  *   Examples allOddBits(0xFFFFFFFD) = 0, allOddBits(0xAAAAAAAA) = 1
@@ -219,7 +225,21 @@ int anyEvenBit(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int inv_x = ~(x);
+  //making a mask 
+  int b0 = 0xaa;
+
+  int b1 = b0 << 8;
+  int b2 = b1 << 8;
+  int b3 = b2 << 8;
+
+  int mask = b0 | b1 | b2 | b3;
+
+  int result = mask & inv_x;
+
+  int ans = (!result);
+
+  return ans;
 }
 /* 
  * logicalShift - shift x to the right by n, using a logical shift
@@ -229,8 +249,21 @@ int allOddBits(int x) {
  *   Max ops: 20
  *   Rating: 3 
  */
+
+//////////////////////////////////////////////////see again
 int logicalShift(int x, int n) {
-  return 2;
+  //first need to see if it is negative
+  // need to rightshift by 31
+  // int checksign = x >> 31;
+  // int mask = 1111 0000 0000 0000 0000 0000 0000 0000
+
+  int shifted_bits = x>>n;
+
+  
+  
+  int result; 
+
+  return result;
 }
 /* 
  * rotateRight - Rotate x to the right by n
@@ -240,6 +273,8 @@ int logicalShift(int x, int n) {
  *   Max ops: 25
  *   Rating: 3 
  */
+///////////////////////////////////////////////////////////
+
 int rotateRight(int x, int n) {
   return 2;
 }
@@ -250,6 +285,7 @@ int rotateRight(int x, int n) {
  *   Rating: 1
  */
 int tmin(void) {
+
   return 2;
 }
 /* 
