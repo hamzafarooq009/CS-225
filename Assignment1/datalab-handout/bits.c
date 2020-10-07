@@ -171,6 +171,7 @@ NOTES:
  *   Max ops: 8
  *   Rating: 1
  */
+//1
 int bitAnd(int x, int y) { //and of two numbers, by using de morgans law
   int z = ~(~x | ~y);
   return z;
@@ -183,7 +184,7 @@ int bitAnd(int x, int y) { //and of two numbers, by using de morgans law
  *   Max ops: 6
  *   Rating: 2
  */
-
+//2
 int getByte(int x, int n) {
   int leftshifted_n = n << 3;
   int shifted_x = x >> leftshifted_n;
@@ -199,6 +200,7 @@ int getByte(int x, int n) {
  *   Max ops: 12
  *   Rating: 2
  */
+//3
 int anyEvenBit(int x) {
   
   //making a mask 
@@ -224,6 +226,7 @@ int anyEvenBit(int x) {
  *   Max ops: 12
  *   Rating: 2
  */
+//4
 int allOddBits(int x) {
   int inv_x = ~(x);
   //making a mask 
@@ -250,6 +253,7 @@ int allOddBits(int x) {
  *   Rating: 3 
  */
 
+//5
 //////////////////////////////////////////////////see again
 int logicalShift(int x, int n) {
   //first need to see if it is negative
@@ -275,6 +279,7 @@ int logicalShift(int x, int n) {
  *   Max ops: 25
  *   Rating: 3 
  */
+//6
 ///////////////////////////////////////////////////////////
             //(1st)                              (last)
 //0x87654321 = 1000 0111 0110 0101 0100 0011 0010 0001
@@ -299,9 +304,12 @@ int rotateRight(int x, int n) {
  *   Max ops: 4
  *   Rating: 1
  */
+//7
 int tmin(void) {
+  int b0 = 0x1;
+  int result = b0<<31;
 
-  return 2;
+  return result;
 }
 /* 
  * fitsBits - return 1 if x can be represented as an 
@@ -312,9 +320,14 @@ int tmin(void) {
  *   Max ops: 15
  *   Rating: 2
  */
+//8
+
+//(5,3) = -4_ 2_ 1_ = cant
+//(-4,3) = -4  2  1 = can by onning -4 only
 int fitsBits(int x, int n) {
   return 2;
 }
+
 /* 
  * leastBitPos - return a mask that marks the position of the
  *               least significant 1 bit. If x == 0, return 0
@@ -323,8 +336,17 @@ int fitsBits(int x, int n) {
  *   Max ops: 6
  *   Rating: 2 
  */
+//9
+
+//96 = 0x60 = 0110 0000
+//     0x20 = 0010 0000 
+
+//check again
 int leastBitPos(int x) {
-  return 2;
+  //first making a mask to extract the LSB
+  int mask = ~x + 0x01;
+  int result = x & mask;
+  return result;
 }
 /* 
  * divpwr2 - Compute x/(2^n), for 0 <= n <= 30
@@ -334,6 +356,7 @@ int leastBitPos(int x) {
  *   Max ops: 15
  *   Rating: 2
  */
+//10
 int divpwr2(int x, int n) {
     return 2;
 }
@@ -344,9 +367,16 @@ int divpwr2(int x, int n) {
  *   Max ops: 6
  *   Rating: 3
  */
-int isNonNegative(int x) {
 
-  return 2;
+//11
+int isNonNegative(int x) {
+  //need to check the signed bit
+  int shift = x >>31;
+  int b0 = 0x1;
+  int lastbit = shift & b0;
+  int result = (!lastbit);
+
+  return result;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -355,9 +385,17 @@ int isNonNegative(int x) {
  *   Max ops: 24
  *   Rating: 3
  */
+//12
+//x = 4 = 100
+//y = 5 = 101
+//yes x<y
 int isLessOrEqual(int x, int y) {
+  //if taking and between x and y gives x then it is 1
+  int subset = x & y;
+  int check = x & (~subset);
+  int result = !(check);
 
-  return 2;
+  return result;
 }
 /*
  * satMul2 - multiplies by 2, saturating to Tmin or Tmax if overflow
@@ -368,6 +406,7 @@ int isLessOrEqual(int x, int y) {
  *   Max ops: 20
  *   Rating: 3
  */
+//13
 int satMul2(int x) {
   return 2;
 }
@@ -379,7 +418,10 @@ int satMul2(int x) {
  *   Max ops: 20
  *   Rating: 4
  */
+//14
 int isPower2(int x) {
+  //need to check only one bit is onn
+  //agar negative bit
   
   return 2;
 }
