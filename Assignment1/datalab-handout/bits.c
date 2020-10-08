@@ -325,7 +325,7 @@ int tmin(void) {
 //(5,3) = -4_ 2_ 1_ = cant
 //(-4,3) = -4  2  1 = can by onning -4 only
 int fitsBits(int x, int n) {
-  return 2;
+
 }
 
 /* 
@@ -357,8 +357,18 @@ int leastBitPos(int x) {
  *   Rating: 2
  */
 //10
+//check again
 int divpwr2(int x, int n) {
-    return 2;
+  //we know that right shift is equivalent to dividing the number by 2^n
+  //we need to round them towards 0 as well 
+  //This can be solved by bias, 0 for positive number and 1 for negative numbers
+  //The program will still round down but since we had added one, we will get the required
+  //result.
+
+  int mask = (1 << n) + (~0);
+  int bias = (x >>31) & mask;
+  int result = (x + bias) >> n;
+  return result;
 }
 /* 
  * isNonNegative - return 1 if x >= 0, return 0 otherwise 
@@ -386,16 +396,20 @@ int isNonNegative(int x) {
  *   Rating: 3
  */
 //12
-//x = 4 = 100
-//y = 5 = 101
-//yes x<y
-int isLessOrEqual(int x, int y) {
-  //if taking and between x and y gives x then it is 1
-  int subset = x & y;
-  int check = x & (~subset);
-  int result = !(check);
 
-  return result;
+/////////////////////////////////////////////////////////////////////////////////////////
+int isLessOrEqual(int x, int y) {
+
+  int sign_x = x >> 31; //to get the MSB of x
+  int sign_y = y >> 31; //to get the MSB of y
+  int diff = y + (~x+1);// to get value of (y-x) difference
+  int sign_diff = !(diff >> 31);//to get the MSB of diff
+  int sign_comparison = !(sign_x ^ sign_y); //for same sign XOR operator is used to get zero
+  
+  int diff_sign = (!sign_y) & sign_x; //only results in 1 if x is negative and y is positive.
+  int same_sign = sign_comparison & sign_diff;
+  int result = diff_sign | same_sign;
+  return result; 
 }
 /*
  * satMul2 - multiplies by 2, saturating to Tmin or Tmax if overflow
@@ -407,7 +421,9 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 3
  */
 //13
+//need to study underflow and overflow
 int satMul2(int x) {
+
   return 2;
 }
 /*
@@ -420,8 +436,17 @@ int satMul2(int x) {
  */
 //14
 int isPower2(int x) {
-  //need to check only one bit is onn
-  //agar negative bit
-  
-  return 2;
+  //a number which is power of two has only one bit set
+  //If the number is neither zero nor a power of two, it will have 1 in more than one place. So if x is a power of 2 then x & (x-1) will be 0.
+  //making (x-1) from x by: x + (~0)
+  //first check if its the power of two by applying and between x and x-1
+  int x_1 = x + (~0x0);
+  int pow2 = !(x & x_1);
+
+  //check if the number is negative
+  int check_neg= !((x>>31)&(0x1));
+
+  //need to check 3 cases
+  int result = pow2 & !(!x) & (check_neg);
+  return result;
 }
