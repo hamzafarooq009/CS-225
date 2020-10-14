@@ -237,7 +237,7 @@ int allOddBits(int x) {
   int b3 = b2 << 8;
 
   int mask = b0 | b1 | b2 | b3;
-
+  
   int result = mask & inv_x;
 
   int ans = (!result);
@@ -264,8 +264,8 @@ int logicalShift(int x, int n) {
   //init_mask <<(27) = 1111 0000 0000 0000 0000 0000 0000 0000 (need to take complement of this to mask it using add) 
   //31-4 = 27
 
-  int init_mask = ~(0x1);
-  int mask = ~(init_mask <<(31-n));
+  int init_mask = (0x1 << 31);
+  int mask = ~((init_mask >> n) <<1);
   int shifted_result = x >> n;
   int final_result = shifted_result & mask;
 
@@ -282,21 +282,26 @@ int logicalShift(int x, int n) {
 //6
 ///////////////////////////////////////////////////////////
             //(1st)                              (last)
-//0x87654321 = 1000 0111 0110 0101 0100 0011 0010 0001
-//0x76543218 = 0111 0110 0101 0100 0011 0010 0001 1000
-
+//0x87654321 = 1000 0111 0110 0101 0100 0011 0010 0001, 1111 1111
+//0x76543218 = 0111 0110 0101 0100 0011 0010 0001 1000, 1111 1000
+                                                      //0000 0111
+                                                      //0000 0000
 //0x80000000 = 1000 0000 0000 0000 0000 0000 0000 0000
 
 //need to confirm this
 int rotateRight(int x, int n) {
-  int x_copy = x >> 28;//now take last 4 bits from it only
-  int mask1 = ~((~(0x1)) << 3);
-  int x_copy_masked = x_copy & mask1; //0000 0000 0000 00000 0000 0000 0000 1000
 
-  int x_og_shifted = x >> (32-n);
-  int result = x_og_shifted | x_copy_masked;
+  int n_32 = 32 + ((~n) + 1); //(get 32 - n)
+  int leftshiftedBits = x << n_32; // shifting x by (32-n) bits
 
-  return result;
+  //shifting right but need to care about the Arithmetic shift
+  int Mask = ~(~0 << n_32);//mask to remove the leading ones in case of -ve number
+
+  //Right shifting bits and taking and between mask and the shifted bit because there x is shifted arithmatically and could leave 1s to the set, we are taking and in order to remove them
+  int rightshiftedBits = Mask & (x >> n);//taking and between mask and right shifted x 
+  //taking or between right and left shifted bits to get the final bits
+  //0101 0000 | 0000 1010 = 0101 1010
+  return (leftshiftedBits | rightshiftedBits);//taking or to get the full fomr
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -306,8 +311,7 @@ int rotateRight(int x, int n) {
  */
 //7
 int tmin(void) {
-  int b0 = 0x1;
-  int result = b0<<31;
+  int result = 0x1<<31;
 
   return result;
 }
@@ -324,7 +328,15 @@ int tmin(void) {
 
 //(5,3) = -4_ 2_ 1_ = cant
 //(-4,3) = -4  2  1 = can by onning -4 only
+
 int fitsBits(int x, int n) {
+  //a number x can be represented in n bits, if it retains its value after truncation and extension.
+  int thirty2_n = 32 + (~n+1);//(32-n)
+  int mask = (x << thirty2_n);
+  int mask2 = mask >> thirty2_n;
+  //now need to crosscheck with the original x
+  int check = (mask2^x);//Xor to check if original value is retained
+  return !(check);
 
 }
 
@@ -341,7 +353,6 @@ int fitsBits(int x, int n) {
 //96 = 0x60 = 0110 0000
 //     0x20 = 0010 0000 
 
-//check again
 int leastBitPos(int x) {
   //first making a mask to extract the LSB
   int mask = ~x + 0x01;
@@ -364,7 +375,6 @@ int divpwr2(int x, int n) {
   //This can be solved by bias, 0 for positive number and 1 for negative numbers
   //The program will still round down but since we had added one, we will get the required
   //result.
-
   int mask = (1 << n) + (~0);
   int bias = (x >>31) & mask;
   int result = (x + bias) >> n;
@@ -385,7 +395,6 @@ int isNonNegative(int x) {
   int b0 = 0x1;
   int lastbit = shift & b0;
   int result = (!lastbit);
-
   return result;
 }
 /* 
@@ -399,14 +408,18 @@ int isNonNegative(int x) {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 int isLessOrEqual(int x, int y) {
-
+  //in order to check if x<= y, we will use 2 comparisons
+  //case1: Signbit of x is negative and y is positive
+  //case2: Both x and y have the same sign (+ve,+ve)|(-ve,-ve)
+  //in case 2 we are assuming that the value of x is less than that of y
   int sign_x = x >> 31; //to get the MSB of x
   int sign_y = y >> 31; //to get the MSB of y
+  //y-x and inspect the signbit to check 
   int diff = y + (~x+1);// to get value of (y-x) difference
   int sign_diff = !(diff >> 31);//to get the MSB of diff
   int sign_comparison = !(sign_x ^ sign_y); //for same sign XOR operator is used to get zero
   
-  int diff_sign = (!sign_y) & sign_x; //only results in 1 if x is negative and y is positive.
+  int diff_sign = !(sign_y) & sign_x; //only results in 1 if x is negative and y is positive.
   int same_sign = sign_comparison & sign_diff;
   int result = diff_sign | same_sign;
   return result; 
@@ -415,7 +428,7 @@ int isLessOrEqual(int x, int y) {
  * satMul2 - multiplies by 2, saturating to Tmin or Tmax if overflow
  *   Examples: satMul2(0x30000000) = 0x60000000
  *             satMul2(0x40000000) = 0x7FFFFFFF (saturate to TMax)
- *             satMul2(0x60000000) = 0x80000000 (saturate to TMin)
+ *             satMul2(0x60000000) = 0x80000000 (saturate to TMax)
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 20
  *   Rating: 3
@@ -424,7 +437,42 @@ int isLessOrEqual(int x, int y) {
 //need to study underflow and overflow
 int satMul2(int x) {
 
-  return 2;
+
+  //0x30000000 = 0110 000 0000 0000 0000 0000 0000 0000
+  //0x40000000 = 0100 0000 0000 0000 0000 0000 0000 0000
+  //0x60000000 = 0110 0000 0000 0000 0000 0000 0000 0000
+
+  //0x80000000 = 1000 0000 0000 0000 0000 0000 0000 0000
+  //0x7FFFFFFF = 1111 1111 1111 1111 1111 1111 1111 1111
+
+  
+  // //we need to compare the sign bits of x and (x+x) to make a mask
+  // int signx_2 = (x_2>>31);
+  // //also need to get the bit next to the sign bit
+  // int next_to_signbit = (x_2<<1) >>31;
+
+  //while multiplication, if sign changes then we need to saturate it, 
+  //case1: from positive to negative, then TMax
+  //case2: from negative to positve, then TMin
+
+  int xSignBit = x >> 31;
+  int mul_2 = x << 1; //multiplication of 2
+  int tMin = 1<<31;//finding TMin
+  int tMax = ~(tMin);//finding TMax
+
+  //if signbit before and and after multiplication is different then there is an overflow
+  //in order to check, take a xor of before and after x, and check for the sign bit
+
+  int checkFlow = (x^mul_2);
+  //if all zeros then no overflow but if there are ones then there must be an overflow
+  int signcheckFlow = checkFlow >> 31;
+
+  //we need a mask if there is an overflow
+  //In other case, saturation mask will be empty and normal result will be displayed
+  int mask = xSignBit ^ tMax;
+  int saturation = signcheckFlow & mask;
+  int result = saturation | (mul_2 & ~signcheckFlow);
+  return result;
 }
 /*
  * isPower2 - returns 1 if x is a power of 2, and 0 otherwise
@@ -440,11 +488,12 @@ int isPower2(int x) {
   //If the number is neither zero nor a power of two, it will have 1 in more than one place. So if x is a power of 2 then x & (x-1) will be 0.
   //making (x-1) from x by: x + (~0)
   //first check if its the power of two by applying and between x and x-1
-  int x_1 = x + (~0x0);
+  int x_1 = x + (~0);
+  //checking if only one bit is present in the set, it will return 1 if all bits are 0 and will return 0 if one or more than one bit is 1
   int pow2 = !(x & x_1);
 
   //check if the number is negative
-  int check_neg= !((x>>31)&(0x1));
+  int check_neg= !((x>>31));
 
   //need to check 3 cases
   int result = pow2 & !(!x) & (check_neg);
