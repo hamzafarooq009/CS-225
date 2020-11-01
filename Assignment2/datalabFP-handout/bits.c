@@ -350,16 +350,20 @@ unsigned float_i2f(int x) {
   //if sign bit is -ve, we will take the absolute of it
   // unsigned absX;
   if(signbit){
-    x = ~x + 1;
+    x = ~x + 0x1;
   }
   
   //for exp part, make a copy of x
   unsigned tmp_x = x;
   int E = 0;
   //right shifting tmp_x to count the number of bits right to MSB
-  while ((tmp_x >> 1) != 0){
-    tmp_x = tmp_x >> 1;
-    E++;
+  int mask = 1 , counter = 0;
+  while (counter != 31){
+    if((tmp_x >> 1) != 0){
+      tmp_x = tmp_x >> 1;
+      E++;
+    }
+    counter = counter + 1;
   }
   //now left shift the exp 23 bits
   //0x7f = 0 0000000 00000000000000001111111
@@ -386,21 +390,27 @@ unsigned float_i2f(int x) {
   //rounding conversion without using macros
   //now we need to handle overflows
 
-  if (round > 256) {
-    round = 0x1;
-  }
-  else if (round < 256){
-    round = 0x0;
-  }
-  else{
-    round = frac & 0x1;  
-  } 
   
   if(x){
+    //joining all the results
     int flp = (signbit | exp_part | frac); 
+    //checking rounding
+    //rounding
+    if (round < 256) {
+      round = 0x0;
+    }
+    else if (round > 256){
+      round = 0x1;
+    }
+    else{
+      round = frac & 0x1;  
+    } 
     return flp + round;
   }
-  return 0;
+  else{
+    return 0;
+  }
+  
 }
 /* 
  * float_half - Return bit-level equivalent of expression 0.5*f for
@@ -421,22 +431,32 @@ unsigned float_half(unsigned uf) {
   Case3->exp_part mins 1
   */
   //to check if exponent part bits are all 1
-  if((uf & 0x7f800000) == 0x7f800000){
-    return uf;
+  int odd_mask = 0x3;
+  int oddbits = uf & odd_mask;
+  int sign_mask = 1 << 31;
+
+  
+  int exp_onn = 0x7f800000;//0 11111111 00000000000000000000000 //pos inf
+  int exp = uf & exp_onn;//taking and between uf and exp_onn to get the exp bits of the floating point
+  int frac = uf & 0x7f000000; //0 11111110 00000000000000000000000//and 
+  
+  if((exp) == exp_onn){
+    return uf; //if pos inf then return the uf
   }
 
-  if(uf & 0x7f000000){
-    return uf + 0xff800000;
+  if(!(!frac)){
+    // printf("%d\n",frac);
+    return uf + 0xff800000; //1 11111111 00000000000000000000000 //neg inf
   }
 
-  //right shifting by 1 means dividing it it by 2^-1 i.e half
-  unsigned uf2 = uf >> 1;
+  unsigned uf2 = uf >> 0x1;
   
-  if ((uf & 3) == 3)
-    uf2 += 1;
+  if (!(oddbits^odd_mask))//checking the oddbits
+    uf2 = uf2 + 1;
 
-  if (uf & 0x80000000)
-    uf2 += (0x40000000);
-  
+  if (uf & 0x80000000){ //1 00000000 00000000000000000000000
+    int mask = 0x1 << 30;
+    uf2 = uf2 + mask;//0 10000000 00000000000000000000000
+  }
   return uf2;
 }
